@@ -102,9 +102,23 @@ void displayMessage() {
   // Display the message on the LCD
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(messageToDisplay[currentLine]);
+  // Print the line character by character with a beep
+  for (unsigned int i = 0; i < messageToDisplay[currentLine].length(); i++) {
+    digitalWrite(buzzer, HIGH);
+    lcd.print(messageToDisplay[currentLine][i]);
+    delay(50);
+    digitalWrite(buzzer, LOW);
+    delay(50);
+  }
   lcd.setCursor(0, 1);
-  lcd.print(messageToDisplay[currentLine + 1]);
+  // Print the next line character by character with a beep
+  for (unsigned int i = 0; i < messageToDisplay[currentLine + 1].length(); i++) {
+    digitalWrite(buzzer, HIGH);
+    lcd.print(messageToDisplay[currentLine + 1][i]);
+    delay(50);
+    digitalWrite(buzzer, LOW);
+    delay(50);
+  }
 }
 
 void scrollUp() {

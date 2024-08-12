@@ -19,10 +19,10 @@
 #include <EEPROM.h>
 
 // ↓↓ Set the message to be stored in the EEPROM here ↓↓
-String secretMessage = "Hello World!, This is a secret message stored in the EEPROM";
+String secretMessage = "Hello, World!, This is a secret message stored in the EEPROM";
 
 #define I2C_ADDR    0x26 // I2C Address of the module
-#define buzzerPin 5 // Buzzer pin
+#define buzzer 5 // Buzzer pin
 
 LiquidCrystal_I2C lcd(I2C_ADDR, 16, 2);
 
@@ -34,28 +34,42 @@ void setup() {
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 0);
-  pinMode(buzzerPin, OUTPUT);
-  digitalWrite(buzzerPin, LOW);
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(buzzer, LOW);
 
-  // Store the secret message to the EEPROM
-  for (int i = 0; i < secretMessage.length(); i++) {
+  EEPROM.begin();
+
+  // Store the secret message to the EEPROM with the END OF MESSAGE character at the end and wipe the rest of the EEPROM
+  // Wipe the EEPROM
+  for (unsigned int i = 0; i < 512; i++) {
+    EEPROM.write(i, 0);
+  }
+  // Store the message
+  for (unsigned int i = 0; i < secretMessage.length(); i++) {
     EEPROM.write(i, secretMessage[i]);
   }
+  // Store the end of message character
+  EEPROM.write(secretMessage.length(), '\0');
 
 
-  // Beep the buzzer 4 times
-  for (int i = 0; i < 4; i++) {
-    digitalWrite(buzzerPin, HIGH);
-    delay(200);
-    digitalWrite(buzzerPin, LOW);
-    delay(200);
+
+  // Beep the buzzer 5 times
+  for (int i = 0; i < 5; i++) {
+    digitalWrite(buzzer, HIGH);
+    delay(100);
+    digitalWrite(buzzer, LOW);
+    delay(100);
   }
 
 
-  // Print the message on the serial monitor for debugging
+  // Print the message on the serial monitor for debugging by reading the message from the EEPROM
   Serial.begin(115200);
   Serial.println("Secret message stored in EEPROM, please upload the second program");
-  Serial.println("Secret message: " + secretMessage);
+  Serial.println("Secret message: ");
+  for (unsigned int i = 0; i < 512; i++) {
+    Serial.print(char(EEPROM.read(i)));
+  }
+  
 
 
 }

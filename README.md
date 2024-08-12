@@ -1,7 +1,7 @@
 # Agent-Style-Secret-Message-Box
 Inspired by the movie series "Mission Impossible", I want to create a way to send secret messages to someone in a secure way.
 
-I got the idea to use the EEPROM of an arduino, since it is non-volatile and can store data even when the power is off nad it cant be recovered when overwritten.
+I got the idea to use the EEPROM of an arduino, since it can store data even when the power is cut nad it cant be recovered when overwritten.
 
 
 This project consits of: arduino nano, 16x2 LCD, 1 push buttons, 1 buzzer, 1 bigger button, toggle switch, battery with TP4056 charging module, and a 3D printed case.

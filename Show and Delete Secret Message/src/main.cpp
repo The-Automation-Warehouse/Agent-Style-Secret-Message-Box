@@ -61,6 +61,8 @@ void setup() {
     delay(100);
   }
 
+  delay(1000);
+
   char c;
   // Read the secret message from the EEPROM
   // Continue reading the message until the END OF TEXT character is reached
@@ -74,6 +76,7 @@ void setup() {
 
   // Print the message on the serial monitor for debugging
   Serial.println("Secret message: " + secretMessage);
+  Serial.println();
 
 
   // Divide the message into words (max 16 characters per word)
@@ -84,11 +87,6 @@ void setup() {
       if (word.length() > 0) {
         words[lineCount] = word;
         word = "";
-        lineCount++;
-      }
-      // Only add the space or newline if the previous word was stored
-      if (currentChar != '\r') {
-        words[lineCount] = String(currentChar);
         lineCount++;
       }
     } else {
@@ -106,25 +104,34 @@ void setup() {
   for (int i = 0; i < lineCount; i++) {
     Serial.println(words[i]);
   }
+  Serial.println();
 
 
   // Divide the message into lines (max 16 characters per line)
   String line = "";
-  int lineLength = 0;
+  int currentLength = 0;
   for (int i = 0; i < lineCount; i++) {
-    if (lineLength + words[i].length() <= 16) {
+    if (currentLength + words[i].length() + 1 <= 16) {
       line += words[i] + " ";
-      lineLength += words[i].length() + 1;
+      currentLength += words[i].length() + 1;
     } else {
       messageToDisplay[currentLine] = line;
       line = words[i] + " ";
-      lineLength = words[i].length() + 1;
+      currentLength = words[i].length() + 1;
       currentLine++;
     }
   }
+
+  // Add the last line to the array
   messageToDisplay[currentLine] = line;
 
+  // Print the lines on the serial monitor for debugging
+  for (int i = 0; i <= currentLine; i++) {
+    Serial.println(messageToDisplay[i]);
+  }
+  Serial.println();
 
+  currentLine = 0;
   displayMessage();
 
 
@@ -143,23 +150,26 @@ void displayMessage() {
   for (unsigned int i = 0; i < messageToDisplay[currentLine].length(); i++) {
     digitalWrite(buzzer, HIGH);
     lcd.print(messageToDisplay[currentLine][i]);
-    delay(50);
+
     digitalWrite(buzzer, LOW);
-    delay(50);
+
   }
+  
   lcd.setCursor(0, 1);
   // Print the next line character by character with a beep
   for (unsigned int i = 0; i < messageToDisplay[currentLine + 1].length(); i++) {
     digitalWrite(buzzer, HIGH);
     lcd.print(messageToDisplay[currentLine + 1][i]);
-    delay(30);
+
     digitalWrite(buzzer, LOW);
-    delay(30);
+
   }
+  
 }
 
 void scrollUp() {
   // Scroll up the message
+  Serial.println("Scroll up");
   if (currentLine > 0) {
     currentLine--;
     displayMessage();
@@ -168,6 +178,7 @@ void scrollUp() {
 
 void scrollDown() {
   // Scroll down the message
+  Serial.println("Scroll down");
   if (currentLine < lineCount - 1) {
     currentLine++;
     displayMessage();

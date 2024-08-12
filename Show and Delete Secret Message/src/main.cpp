@@ -14,15 +14,16 @@
 #include "LiquidCrystal_I2C.h"
 #include <EEPROM.h>
 
-String secretMessage;
+String secretMessage = ""; // Variable to store the secret message
+String words[64]; // Array to store the words of the message
 String messageToDisplay[32]; // Array to store the message divided into lines
 int currentLine = 0; // Current line to display
 int lineCount = 0; // Number of lines in the message
 
 #define I2C_ADDR    0x26 // I2C Address of the module
 #define buzzer 5 // Buzzer pin
-#define topButton 3 // Top button pin
-#define bottomButton 4 // Bottom button pin
+#define topButton 2 // Top button pin
+#define bottomButton 3 // Bottom button pin
 #define redButton 4 // Red button pin
 
 LiquidCrystal_I2C lcd(I2C_ADDR, 16, 2);
@@ -60,33 +61,69 @@ void setup() {
     delay(100);
   }
 
+  char c;
   // Read the secret message from the EEPROM
-  // Continue reading the message until the END OF MESSAGE character is found
+  // Continue reading the message until the END OF TEXT character is reached
   for (unsigned int i = 0; i < 512; i++) {
-    char c = char(EEPROM.read(i));
+    c = EEPROM.read(i); // Read a byte from EEPROM
     if (c == '\0') {
-      break;
+      break; // Stop reading when the null character is found
     }
-    secretMessage += c;
+    secretMessage += c; // Append the character to the secretMessage string
   }
 
   // Print the message on the serial monitor for debugging
-
   Serial.println("Secret message: " + secretMessage);
 
-  // Divide the message into parts (max 16 characters per line and words are not split)
-  // loop through the message and check for spaces and when the line is full, store it in the array
-  int charCount = 0;
+
+  // Divide the message into words (max 16 characters per word)
+  String word = "";
   for (unsigned int i = 0; i < secretMessage.length(); i++) {
-    if (secretMessage[i] == ' ') {
-      if (charCount > 15) {
+    char currentChar = secretMessage[i];
+    if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
+      if (word.length() > 0) {
+        words[lineCount] = word;
+        word = "";
         lineCount++;
-        charCount = 0;
       }
+      // Only add the space or newline if the previous word was stored
+      if (currentChar != '\r') {
+        words[lineCount] = String(currentChar);
+        lineCount++;
+      }
+    } else {
+      word += currentChar;
     }
-    messageToDisplay[lineCount] += secretMessage[i];
-    charCount++;
   }
+
+  // If there is a word left, add it to the array
+  if (word.length() > 0) {
+    words[lineCount] = word;
+    lineCount++;
+  }
+
+  // Print the words on the serial monitor for debugging
+  for (int i = 0; i < lineCount; i++) {
+    Serial.println(words[i]);
+  }
+
+
+  // Divide the message into lines (max 16 characters per line)
+  String line = "";
+  int lineLength = 0;
+  for (int i = 0; i < lineCount; i++) {
+    if (lineLength + words[i].length() <= 16) {
+      line += words[i] + " ";
+      lineLength += words[i].length() + 1;
+    } else {
+      messageToDisplay[currentLine] = line;
+      line = words[i] + " ";
+      lineLength = words[i].length() + 1;
+      currentLine++;
+    }
+  }
+  messageToDisplay[currentLine] = line;
+
 
   displayMessage();
 
@@ -115,9 +152,9 @@ void displayMessage() {
   for (unsigned int i = 0; i < messageToDisplay[currentLine + 1].length(); i++) {
     digitalWrite(buzzer, HIGH);
     lcd.print(messageToDisplay[currentLine + 1][i]);
-    delay(50);
+    delay(30);
     digitalWrite(buzzer, LOW);
-    delay(50);
+    delay(30);
   }
 }
 

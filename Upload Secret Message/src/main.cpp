@@ -27,7 +27,6 @@ String secretMessage = "Hello, World!, This is a secret message stored in the EE
 LiquidCrystal_I2C lcd(I2C_ADDR, 16, 2);
 
 void setup() {
-
   // Initialize the lcd and buzzer
   Wire.begin();
   lcd.begin(16, 2);
@@ -37,6 +36,7 @@ void setup() {
   pinMode(buzzer, OUTPUT);
   digitalWrite(buzzer, LOW);
 
+  // Initialize EEPROM
   EEPROM.begin();
 
   // Store the secret message to the EEPROM with the END OF MESSAGE character at the end and wipe the rest of the EEPROM
@@ -44,14 +44,14 @@ void setup() {
   for (unsigned int i = 0; i < 512; i++) {
     EEPROM.write(i, 0);
   }
+
   // Store the message
   for (unsigned int i = 0; i < secretMessage.length(); i++) {
     EEPROM.write(i, secretMessage[i]);
   }
+  
   // Store the end of message character
   EEPROM.write(secretMessage.length(), '\0');
-
-
 
   // Beep the buzzer 5 times
   for (int i = 0; i < 5; i++) {
@@ -61,17 +61,22 @@ void setup() {
     delay(100);
   }
 
-
   // Print the message on the serial monitor for debugging by reading the message from the EEPROM
   Serial.begin(115200);
   Serial.println("Secret message stored in EEPROM, please upload the second program");
-  Serial.println("Secret message: ");
+
+  // Read the secret message from the EEPROM into a new string
+  String readMessage = "";
   for (unsigned int i = 0; i < 512; i++) {
-    Serial.print(char(EEPROM.read(i)));
+    char c = char(EEPROM.read(i));
+    if (c == '\0') {
+      break;
+    }
+    readMessage += c;
   }
-  
 
-
+  // Print the retrieved message
+  Serial.println("Secret message: " + readMessage);
 }
 
 void loop() {

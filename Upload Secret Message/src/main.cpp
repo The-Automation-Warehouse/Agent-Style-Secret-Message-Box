@@ -18,8 +18,12 @@
 #include <Wire.h>
 #include <EEPROM.h>
 
-// ↓↓ Set the message to be stored in the EEPROM here ↓↓
-String secretMessage = "Hello, World!, This is a secret message stored in the EEPROM";
+// ↓↓ Set the message to be stored in the EEPROM here ↓↓   50 words max and 512 characters max
+String secretMessage = "Hello, World!, This is a secret message stored in the EEPROM, Please delete me ASAP";
+
+
+
+
 
 #define I2C_ADDR    0x26 // I2C Address of the module
 #define buzzer 5 // Buzzer pin

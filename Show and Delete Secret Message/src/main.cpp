@@ -20,6 +20,12 @@ String messageToDisplay[25]; // Array to store the message divided into lines
 int currentLine = 0; // Current line to display
 int lineCount = 0; // Number of lines in the message
 int wordCount = 0; // Number of words in the message
+bool displayMessageFlag = false; // Flag to indicate if the message should be displayed
+bool scrollUpFlag = true; // Flag to indicate if the message should be scrolled up
+bool scrollDownFlag = true; // Flag to indicate if the message should be scrolled down
+bool lastLine = false; // Flag to indicate if the last line is being displayed
+// Last resort bodge to get the interrupts to work
+bool doInterrupts = false;
 
 #define I2C_ADDR    0x26 // I2C Address of the module
 #define buzzer 5 // Buzzer pin
@@ -51,6 +57,8 @@ void setup() {
   pinMode(redButton, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(topButton), scrollUp, FALLING);
   attachInterrupt(digitalPinToInterrupt(bottomButton), scrollDown, FALLING);
+
+  Serial.println("Reading secret message from EEPROM");
 
   EEPROM.begin();
 
@@ -141,13 +149,97 @@ void setup() {
   Serial.println();
 
   currentLine = 0;
+
   displayMessage();
 
 
 }
 
 void loop() {
-  // Do nothing
+
+  if (displayMessageFlag) {
+    displayMessage();
+    displayMessageFlag = false;
+  }
+
+  if (lastLine) {
+    // If the last line is reached, wait for the user to press the red button
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Hold red button  ");
+    lcd.setCursor(0, 1);
+    lcd.print("to confim");
+
+    // Wait for the user to hold the red button
+    // Count down from 5 on the entire screen
+    bool deleteFlag = false;
+
+    while (deleteFlag == false) {
+      if (digitalRead(topButton) == LOW) {
+        break;
+      }
+      while (digitalRead(redButton) == LOW) {
+        for (int i = 5; i > 0; i--) {
+          // Fill the lcd with the number
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          for (int j = 0; j < 16; j++) {
+            lcd.print(i);
+          }
+          lcd.setCursor(0, 1);
+          for (int j = 0; j < 16; j++) {
+            lcd.print(i);
+          }
+          if (digitalRead(redButton) == HIGH) {
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Hold red button  ");
+            lcd.setCursor(0, 1);
+            lcd.print("to confim");
+            break;
+          }
+          delay(1000);
+        }
+        if (digitalRead(redButton) == LOW) {
+          deleteFlag = true;
+          break;
+        }
+      }
+    }
+
+    if (deleteFlag == true) {
+      // Delete the message from the EEPROM
+
+      lcd.clear();
+
+      // Beep the buzzer 2 times
+      for (int i = 0; i < 2; i++) {
+        digitalWrite(buzzer, HIGH);
+        delay(300);
+        digitalWrite(buzzer, LOW);
+        delay(300);
+      }
+
+      for (unsigned int i = 0; i < 512; i++) {
+        EEPROM.write(i, 0);
+      }
+
+      Serial.println("Secret message deleted from EEPROM");
+
+      lcd.setCursor(0, 0);
+      lcd.print("Message deleted");
+
+      deleteFlag = false;
+
+      while (true) {}
+    }
+
+    currentLine = 0;
+    lastLine = false;
+    scrollDownFlag = true;
+    scrollUpFlag = true;
+    displayMessageFlag = true;
+  }
 }
 
 
@@ -157,39 +249,66 @@ void displayMessage() {
   lcd.setCursor(0, 0);
   // Print the line character by character with a beep
   for (unsigned int i = 0; i < messageToDisplay[currentLine].length(); i++) {
-    digitalWrite(buzzer, HIGH);
-    lcd.print(messageToDisplay[currentLine][i]);
-
-    digitalWrite(buzzer, LOW);
+    if (scrollUpFlag) {
+      digitalWrite(buzzer, HIGH);
+      lcd.print(messageToDisplay[currentLine][i]);
+      delay(20);
+      digitalWrite(buzzer, LOW);
+      delay(20);
+    } else {
+      lcd.print(messageToDisplay[currentLine][i]);
+    }
 
   }
   
   lcd.setCursor(0, 1);
   // Print the next line character by character with a beep
   for (unsigned int i = 0; i < messageToDisplay[currentLine + 1].length(); i++) {
-    digitalWrite(buzzer, HIGH);
-    lcd.print(messageToDisplay[currentLine + 1][i]);
-
-    digitalWrite(buzzer, LOW);
-
+    if (scrollDownFlag) {
+      digitalWrite(buzzer, HIGH);
+      lcd.print(messageToDisplay[currentLine + 1][i]);
+      delay(20);
+      digitalWrite(buzzer, LOW);
+      delay(20);
+    } else {
+      lcd.print(messageToDisplay[currentLine + 1][i]);
+    }
   }
+  scrollDownFlag = false;
+  scrollUpFlag = false;
   
+  delay(100);
+  doInterrupts = true;
 }
 
 void scrollUp() {
-  // Scroll up the message
-  Serial.println("Scroll up");
-  if (currentLine > 0) {
-    currentLine--;
-    displayMessage();
+
+  if (doInterrupts) {
+    doInterrupts = false;
+    Serial.println("Scroll up");
+    // Scroll up the message
+    if (currentLine > 0) {
+      currentLine--;
+      scrollUpFlag = true;
+      displayMessageFlag = true;
+    }
   }
+
+  
 }
 
 void scrollDown() {
-  // Scroll down the message
-  Serial.println("Scroll down");
-  if (currentLine < lineCount - 1) {
-    currentLine++;
-    displayMessage();
+  
+  if (doInterrupts) {
+    doInterrupts = false;
+    Serial.println("Scroll down");
+    // Scroll down the message
+    if (currentLine < lineCount - 2) {
+      currentLine++;
+      scrollDownFlag = true;
+      displayMessageFlag = true;
+    } else {
+      lastLine = true;
+    }
   }
 }

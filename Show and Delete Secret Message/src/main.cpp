@@ -15,10 +15,11 @@
 #include <EEPROM.h>
 
 String secretMessage = ""; // Variable to store the secret message
-String words[64]; // Array to store the words of the message
-String messageToDisplay[32]; // Array to store the message divided into lines
+String words[50]; // Array to store the words of the message
+String messageToDisplay[25]; // Array to store the message divided into lines
 int currentLine = 0; // Current line to display
 int lineCount = 0; // Number of lines in the message
+int wordCount = 0; // Number of words in the message
 
 #define I2C_ADDR    0x26 // I2C Address of the module
 #define buzzer 5 // Buzzer pin
@@ -85,9 +86,9 @@ void setup() {
     char currentChar = secretMessage[i];
     if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
       if (word.length() > 0) {
-        words[lineCount] = word;
+        words[wordCount] = word;
         word = "";
-        lineCount++;
+        wordCount++;
       }
     } else {
       word += currentChar;
@@ -96,21 +97,24 @@ void setup() {
 
   // If there is a word left, add it to the array
   if (word.length() > 0) {
-    words[lineCount] = word;
-    lineCount++;
+    words[wordCount] = word;
+    wordCount++;
   }
 
   // Print the words on the serial monitor for debugging
-  for (int i = 0; i < lineCount; i++) {
+  for (int i = 0; i < wordCount; i++) {
     Serial.println(words[i]);
   }
+  Serial.println();
+
+  Serial.println("Words count: " + String(wordCount));
   Serial.println();
 
 
   // Divide the message into lines (max 16 characters per line)
   String line = "";
   int currentLength = 0;
-  for (int i = 0; i < lineCount; i++) {
+  for (int i = 0; i < wordCount; i++) {
     if (currentLength + words[i].length() + 1 <= 16) {
       line += words[i] + " ";
       currentLength += words[i].length() + 1;
@@ -119,16 +123,21 @@ void setup() {
       line = words[i] + " ";
       currentLength = words[i].length() + 1;
       currentLine++;
+      lineCount++;
     }
   }
 
   // Add the last line to the array
   messageToDisplay[currentLine] = line;
+  lineCount++;
 
   // Print the lines on the serial monitor for debugging
   for (int i = 0; i <= currentLine; i++) {
     Serial.println(messageToDisplay[i]);
   }
+  Serial.println();
+
+  Serial.println("Lines count: " + String(lineCount));
   Serial.println();
 
   currentLine = 0;

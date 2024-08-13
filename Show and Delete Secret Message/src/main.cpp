@@ -228,6 +228,8 @@ void loop() {
 
       lcd.setCursor(0, 0);
       lcd.print("Message deleted");
+      lcd.setCursor(0, 1);
+      lcd.print("Turn off device");
 
       deleteFlag = false;
 

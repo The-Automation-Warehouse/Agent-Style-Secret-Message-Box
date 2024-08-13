@@ -1,7 +1,7 @@
 # Agent-Style-Secret-Message-Box
 
-<img src="images/Finished1.jpg" alt="Finished project image" width="380">
-<img src="images/Finished2.jpg" alt="Finished project image" width="570">
+<img src="images/Finished1.jpg" alt="Finished project image" height="320">
+<img src="images/Finished2.jpg" alt="Finished project image" height="320">
 
 
 Inspired by the movie series "Mission Impossible", I want to create a way to send secret messages to someone in a secure way.
@@ -9,9 +9,7 @@ Inspired by the movie series "Mission Impossible", I want to create a way to sen
 I got the idea to use the EEPROM of an arduino, since it can store data even when the power is cut nad it cant be recovered when overwritten.
 
 
-<video width="640" controls>
-  <source src="images/Video.mp4" type="video/mp4">
-</video>
+
 
 
 ## Usage
@@ -42,9 +40,9 @@ If the user holds the button for 5 seconds, the message is deleted from the EEPR
 - 3D printed case
 - Li-Ion/Li-Po battery with TP4056 charging module
 
-<img src="images/Enclosure.png" alt="CAD" width="600">
+<img src="images/Enclosure.png" alt="CAD" height="400">
 
-<img src="images/Inside.jpg" alt="Inside view" width="600">
+<img src="images/Inside.jpg" alt="Inside view" height="320">
 
 
 

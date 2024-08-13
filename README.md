@@ -1,7 +1,7 @@
 # Agent-Style-Secret-Message-Box
 
-<img src="images/Finished1.jpg" alt="Finished project image" height="320">
-<img src="images/Finished2.jpg" alt="Finished project image" height="320">
+<img src="images/Finished1.jpg" alt="Finished project image" height="280">
+<img src="images/Finished2.jpg" alt="Finished project image" height="280">
 
 
 Inspired by the movie series "Mission Impossible", I want to create a way to send secret messages to someone in a secure way.
@@ -9,6 +9,8 @@ Inspired by the movie series "Mission Impossible", I want to create a way to sen
 I got the idea to use the EEPROM of an arduino, since it can store data even when the power is cut nad it cant be recovered when overwritten.
 
 
+
+https://github.com/user-attachments/assets/6dd128ca-d74d-4281-8e2a-d0766f55c4ef
 
 
 

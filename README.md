@@ -1,5 +1,9 @@
 # Agent-Style-Secret-Message-Box
 
+Made as part of Arcade Hack Club
+
+Used github copilot when writing README
+
 <img src="images/Finished1.jpg" alt="Finished project image" height="280">
 <img src="images/Finished2.jpg" alt="Finished project image" height="280">
 
